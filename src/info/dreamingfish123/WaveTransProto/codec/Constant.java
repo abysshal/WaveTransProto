@@ -2,7 +2,7 @@ package info.dreamingfish123.WaveTransProto.codec;
 
 public class Constant {
 
-	public static final int WAVE_RATE_INHZ = 44110;
+	public static final int WAVE_RATE_INHZ = 44100;
 	public static final int MAX_TRANSFER_DATA_LEN = 200;
 	public static final int POINT_PER_SAMPLE = 6;
 	public static final int BIT_PER_BYTE = 10;
