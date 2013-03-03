@@ -33,4 +33,17 @@ public class Util {
 		return sb.toString();
 	}
 
+	public static byte[] resample16To8bit(byte[] bytes) {
+		return resample16To8bit(bytes, 0, bytes.length);
+	}
+
+	public static byte[] resample16To8bit(byte[] bytes, int offset, int len) {
+		byte[] ret = new byte[len / 2];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = (byte) (((((bytes[i * 2 + offset] & 0xff) << 8) + (bytes[i
+					* 2 + offset + 1] & 0xff)) / 2) & 0xff);
+		}
+		return ret;
+	}
+
 }

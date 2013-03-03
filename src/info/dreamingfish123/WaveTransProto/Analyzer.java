@@ -100,8 +100,10 @@ public class Analyzer {
 					continue;
 				}
 			}
-			if (!packetFound) { // 3. decode UART
-				getPacketData();
+			while (!packetFound) { // 3. decode UART
+				if (!getPacketData()) {
+					break;
+				}
 			}
 		}
 		return packetFound;
@@ -138,6 +140,7 @@ public class Analyzer {
 		for (int i = offset; i < offset + len; i++) {
 			buffer[j++] = buffer[i];
 		}
+		start = 0;
 	}
 
 	/**
@@ -191,20 +194,20 @@ public class Analyzer {
 																		// enough
 																		// for a
 																		// UART
-					remainLen -= i - start;
-					start = i;
-					return false;
+					break;
 				} else {
 					int val = WaveDecoder.decodeUART(buffer, i);
 					if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
 						System.out.println("StartFlag found:" + i + "\t"
 								+ remainLen);
-						remainLen -= i - start + Constant.POINT_PER_UART;
+						remainLen -= (i - start + Constant.POINT_PER_UART);
 						start = i + Constant.POINT_PER_UART;
 						reallocBuffer(start - Constant.POINT_PER_UART,
 								remainLen + Constant.POINT_PER_UART);
 						result[bytesDecoded++] = Constant.PACKET_START_FLAG;
 						startPointFound = true;
+						System.out.println("Start point found:" + start + "\t"
+								+ remainLen);
 						return true;
 					} else {
 						// continue;
@@ -213,7 +216,7 @@ public class Analyzer {
 			}
 		}
 		// not found
-		remainLen -= i - start;
+		remainLen -= (i - start);
 		start = i;
 		reallocBuffer(start, remainLen);
 		return false;
