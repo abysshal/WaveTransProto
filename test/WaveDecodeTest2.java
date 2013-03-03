@@ -6,21 +6,24 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class WaveDecodeTest {
+public class WaveDecodeTest2 {
 
 	public static void main(String[] args) {
 		try {
-			byte[] wavein = new byte[Constant.MAX_TRANSFER_DATA_LEN
-					* Constant.BIT_PER_BYTE * Constant.POINT_PER_BIT
-					+ Constant.WAVE_HEAD_LEN];
-			FileInputStream fis = new FileInputStream("./test/waveout.wav");
-			int len = fis.read(wavein);
+			byte[] buffer = new byte[1024];
+			FileInputStream fis = new FileInputStream("./test/wavein_3.wav");
+			FileOutputStream fos = new FileOutputStream("./test/wavein_3.txt");
+			int read = 0;
+			while ((read = fis.read(buffer)) > 0) {
+				// short[] data = byteArray2ShortArray(buffer);
+				// for (int i = 0; i < data.length; i++) {
+				// fos.write(data[i] > 0 ? 0x31 : 0x30);
+				// }
+				for (int i = 0; i < buffer.length; i++) {
+					fos.write(buffer[i] > 0 ? 0x31 : 0x30);
+				}
+			}
 			fis.close();
-			len -= Constant.WAVE_HEAD_LEN;
-			byte[] ret = WaveDecoder
-					.decode(wavein, Constant.WAVE_HEAD_LEN, len);
-			FileOutputStream fos = new FileOutputStream("./test/wavedata.txt");
-			fos.write(getHex(ret).getBytes());
 			fos.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -40,5 +43,12 @@ public class WaveDecodeTest {
 			sb.append(String.format("%02X ", bytes[i]));
 		}
 		return sb.toString();
+	}
+
+	public static short[] byteArray2ShortArray(byte[] data) {
+		short[] retVal = new short[data.length / 2];
+		for (int i = 0; i < retVal.length; i++)
+			retVal[i] = (short) ((data[i * 2] & 0xff) | (data[i * 2 + 1] & 0xff) << 8);
+		return retVal;
 	}
 }

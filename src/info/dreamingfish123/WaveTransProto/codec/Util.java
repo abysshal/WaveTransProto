@@ -17,4 +17,20 @@ public class Util {
 		val = (val << 8) + (a[offset] & 0xFF);
 		return val;
 	}
+
+	public static String getHex(byte[] bytes) {
+		return getHex(bytes, 0, bytes.length);
+	}
+
+	public static String getHex(byte[] bytes, int offset, int len) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < len; i++) {
+			if (i != 0 && i % 16 == 0) {
+				sb.append("\n");
+			}
+			sb.append(String.format("%02X ", bytes[i + offset]));
+		}
+		return sb.toString();
+	}
+
 }
