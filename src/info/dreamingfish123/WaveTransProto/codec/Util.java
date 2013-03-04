@@ -40,10 +40,16 @@ public class Util {
 	public static byte[] resample16To8bit(byte[] bytes, int offset, int len) {
 		byte[] ret = new byte[len / 2];
 		for (int i = 0; i < ret.length; i++) {
-			ret[i] = (byte) (((((bytes[i * 2 + offset] & 0xff) << 8) + (bytes[i
-					* 2 + offset + 1] & 0xff)) / 2) & 0xff);
+			short s0 = (short) (bytes[i * 2 + offset] & 0xff);
+			short s1 = (short) (bytes[i * 2 + offset + 1] & 0xff);
+			ret[i] = (byte) (((short) (s0 | s1 << 8)) / 256);
 		}
 		return ret;
 	}
 
+	public static short byteToShort(byte[] b, int offset) {
+		short s0 = (short) (b[offset] & 0xff);
+		short s1 = (short) (b[offset + 1] & 0xff);
+		return (short) (s0 | s1 << 8);
+	}
 }

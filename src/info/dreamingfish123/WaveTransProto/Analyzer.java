@@ -1,6 +1,7 @@
 package info.dreamingfish123.WaveTransProto;
 
 import info.dreamingfish123.WaveTransProto.codec.Constant;
+import info.dreamingfish123.WaveTransProto.codec.Util;
 import info.dreamingfish123.WaveTransProto.codec.WaveDecoder;
 import info.dreamingfish123.WaveTransProto.packet.WTPPacket;
 
@@ -46,6 +47,7 @@ public class Analyzer {
 	 * should be called after one packet is found and continue to find more
 	 */
 	public void resetForNext() {
+		System.out.println("ResetForNext remain:" + remainLen);
 		int len = remainLen;
 		reallocBuffer(start, remainLen);
 		resetAll();
@@ -140,7 +142,6 @@ public class Analyzer {
 		for (int i = offset; i < offset + len; i++) {
 			buffer[j++] = buffer[i];
 		}
-		start = 0;
 	}
 
 	/**
@@ -165,6 +166,7 @@ public class Analyzer {
 	 *            how much bytes remained to be moved
 	 */
 	private void resetOnDecodeError(int remainLen) {
+		System.out.println("Error occurred, decoded bytes:" + bytesDecoded);
 		resetAll();
 		this.start = remainLen > 1 ? 1 : 0;
 		this.remainLen = remainLen > 1 ? remainLen - 1 : 0;
@@ -175,6 +177,7 @@ public class Analyzer {
 	 */
 	private void finishPacket() {
 		if (bytesDecoded == packetSize) { // finished
+			System.out.println("EntirePacket found:" + bytesDecoded);
 			packetFound = true;
 			packet = WTPPacket.decodePacketBytes(result);
 		}
@@ -186,39 +189,29 @@ public class Analyzer {
 	 * @return true if found
 	 */
 	private boolean locateDataHead() {
-		int i = 0;
-		for (i = start; i < start + remainLen - Constant.POINT_PER_BIT_HALF; i++) {
-			if ((buffer[i] & 0xff) >= (buffer[i + Constant.POINT_PER_BIT_HALF] & 0xff)
-					+ Constant.WAVE_DIFF_LEVEL) {
-				if (start + remainLen - i < Constant.POINT_PER_UART) {// not
-																		// enough
-																		// for a
-																		// UART
-					break;
-				} else {
-					int val = WaveDecoder.decodeUART(buffer, i);
-					if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
-						System.out.println("StartFlag found:" + i + "\t"
-								+ remainLen);
-						remainLen -= (i - start + Constant.POINT_PER_UART);
-						start = i + Constant.POINT_PER_UART;
-						reallocBuffer(start - Constant.POINT_PER_UART,
-								remainLen + Constant.POINT_PER_UART);
-						result[bytesDecoded++] = Constant.PACKET_START_FLAG;
-						startPointFound = true;
-						System.out.println("Start point found:" + start + "\t"
-								+ remainLen);
-						return true;
-					} else {
-						// continue;
-					}
-				}
+		int i = start;
+		while (true) {
+			if (i > start + remainLen - Constant.POINT_PER_UART) {
+				break;
 			}
+			int val = WaveDecoder.decodeUART(buffer, i);
+			if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
+				System.out.println("StartFlag found:" + i + "\t" + remainLen);
+				remainLen -= (i - start + Constant.POINT_PER_UART);
+				reallocBuffer(i, remainLen + Constant.POINT_PER_UART);
+				//System.out.println("Head:\n" + Util.getHex(buffer, 0, Constant.POINT_PER_UART));
+				start = Constant.POINT_PER_UART;
+				result[bytesDecoded++] = Constant.PACKET_START_FLAG;
+				startPointFound = true;
+				return true;
+			}
+			i++;
 		}
+
 		// not found
 		remainLen -= (i - start);
-		start = i;
-		reallocBuffer(start, remainLen);
+		reallocBuffer(i, remainLen);
+		start = 0;
 		return false;
 	}
 
@@ -233,6 +226,7 @@ public class Analyzer {
 		}
 		int val = WaveDecoder.decodeUART(buffer, start);
 		if (val >= 0) {
+			System.out.println("PacketSize found:" + val);
 			start += Constant.POINT_PER_UART;
 			remainLen -= Constant.POINT_PER_UART;
 			packetSize = val;

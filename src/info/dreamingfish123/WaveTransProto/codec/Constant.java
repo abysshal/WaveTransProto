@@ -16,7 +16,7 @@ public class Constant {
 	public static final byte WAVE_HIGH_LEVEL = (byte) 0xF0;
 	public static final byte WAVE_LOW_LEVEL = (byte) 0x10;
 	public static final byte WAVE_MUTE_LEVEL = (byte) 0x80;
-	public static final byte WAVE_DIFF_LEVEL = 0x40;
+	public static final byte WAVE_DIFF_LEVEL = 0x30;
 	public static final int WAVE_DIFF_SUM_LEVEL = POINT_PER_BIT_HALF
 			* WAVE_DIFF_LEVEL;
 	public static final byte WAVE_HEADER[] = { 0x52, 0x49, 0x46, 0x46,

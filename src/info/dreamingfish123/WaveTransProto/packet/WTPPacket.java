@@ -55,7 +55,7 @@ public class WTPPacket {
 		} else {
 			byte[] ret = new byte[payload.length + 2];
 			ret[0] = startFlag;
-			ret[1] = (byte) (payload.length & 0xff + 2);
+			ret[1] = (byte) ((payload.length + 2) & 0xff);
 			System.arraycopy(payload, 0, ret, 2, payload.length);
 			return ret;
 		}

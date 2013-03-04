@@ -11,8 +11,8 @@ public class WaveDecodeTest2 {
 	public static void main(String[] args) {
 		try {
 			byte[] buffer = new byte[1024];
-			FileInputStream fis = new FileInputStream("./test/wavein_3.wav");
-			FileOutputStream fos = new FileOutputStream("./test/wavein_3.txt");
+			FileInputStream fis = new FileInputStream("./test/res/wavein_mbp_S5570_4_8bit.wav");
+			FileOutputStream fos = new FileOutputStream("./test/res/wavein_mbp_S5570_4_8bit.txt");
 			int read = 0;
 			while ((read = fis.read(buffer)) > 0) {
 				// short[] data = byteArray2ShortArray(buffer);
