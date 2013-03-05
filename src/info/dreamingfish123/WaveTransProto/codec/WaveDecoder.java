@@ -20,17 +20,17 @@ public class WaveDecoder {
 		for (int i = 0; i < ret.length; i++) {
 			ret[i] = 0;
 
-			bit = convertBit(wavein, retOffset);
+			bit = convertBit(wavein, retOffset, false);
 			retOffset += Constant.POINT_PER_BIT;
 
 			for (int j = 0; j < 8; j++) {
-				bit = convertBit(wavein, retOffset);
+				bit = convertBit(wavein, retOffset, false);
 				retOffset += Constant.POINT_PER_BIT;
 
 				ret[i] = (byte) (ret[i] + (bit << (7 - j)) & 0xFF);
 			}
 
-			bit = convertBit(wavein, retOffset);
+			bit = convertBit(wavein, retOffset, false);
 			retOffset += Constant.POINT_PER_BIT;
 
 		}
@@ -60,9 +60,9 @@ public class WaveDecoder {
 		}
 
 		if (ave1 - ave2 > Constant.WAVE_DIFF_SUM_LEVEL) {
-			return 0;
+			return Constant.MANCHESTER_LOW;
 		} else if (ave2 - ave1 > Constant.WAVE_DIFF_SUM_LEVEL) {
-			return 1;
+			return Constant.MANCHESTER_HIGH;
 		} else {
 			return -1;
 		}
@@ -80,7 +80,8 @@ public class WaveDecoder {
 	 *         0 - bit 0;<br/>
 	 *         other - error<br/>
 	 */
-	public static int convertBit(byte[] wavein, int offset) {
+	public static int convertBit(byte[] wavein, int offset,
+			boolean faultTolerance) {
 		int cnt1 = 0;
 		int cnt2 = 0;
 
@@ -91,11 +92,15 @@ public class WaveDecoder {
 		}
 
 		if (cnt1 == Constant.POINT_PER_BIT_HALF && cnt2 == 0) {
-			return 1;
+			return Constant.MANCHESTER_HIGH;
 		} else if (cnt2 == Constant.POINT_PER_BIT_HALF && cnt1 == 0) {
-			return 0;
+			return Constant.MANCHESTER_LOW;
 		} else {
-			return -1;
+			if (faultTolerance) {
+				return convertBit2(wavein, offset);
+			} else {
+				return -1;
+			}
 		}
 	}
 
@@ -109,34 +114,34 @@ public class WaveDecoder {
 	 * @return >= 0 if decode succeed and the result should be returned;<br/>
 	 *         < 0 if error occurred
 	 */
-	public static int decodeUART(byte[] data, int offset) {
+	public static int decodeUART(byte[] data, int offset, boolean faultTolerance) {
 		int offsetTmp = offset;
 		int retTmp = 0;
 		int ret = 0;
 
-		retTmp = WaveDecoder.convertBit(data, offsetTmp);
+		retTmp = WaveDecoder.convertBit(data, offsetTmp, faultTolerance);
 		if (retTmp < 0 || retTmp == 1) {
-			return -1;
+			return -101;
 		}
 		offsetTmp += Constant.POINT_PER_BIT;
 
 		for (int i = 0; i < 8; i++) {
-			retTmp = WaveDecoder.convertBit(data, offsetTmp);
+			retTmp = WaveDecoder.convertBit(data, offsetTmp, faultTolerance);
 			if (retTmp < 0) {
-				return -1;
+				return -103;
 			}
 			offsetTmp += Constant.POINT_PER_BIT;
 
 			ret += (retTmp << (7 - i));
 		}
 
-		retTmp = WaveDecoder.convertBit(data, offsetTmp);
+		retTmp = WaveDecoder.convertBit(data, offsetTmp, faultTolerance);
 		if (retTmp <= 0) {
-			return -1;
+			return -102;
 		}
 		// offsetTmp += Constant.POINT_PER_SAMPLE;
 
-//		System.out.println("Decode succ:" + ret);
+		// System.out.println("Decode succ:" + ret);
 		return ret;
 	}
 }

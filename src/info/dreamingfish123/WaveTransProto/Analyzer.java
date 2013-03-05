@@ -165,11 +165,20 @@ public class Analyzer {
 	 * @param remainLen
 	 *            how much bytes remained to be moved
 	 */
-	private void resetOnDecodeError(int remainLen) {
+	private void resetOnDecodeError() {
 		System.out.println("Error occurred, decoded bytes:" + bytesDecoded);
+		// System.out.println("ErrorBefor:\n"
+		// + Util.getHex(buffer, 0, start));
+		// System.out.println("ErrorBefor:\n"
+		// + Util.getHex(buffer, start - Constant.POINT_PER_UART,
+		// Constant.POINT_PER_UART));
+		// System.out.println("Error:\n"
+		// + Util.getHex(buffer, start, Constant.POINT_PER_UART));
+
+		int len = start + remainLen;
 		resetAll();
-		this.start = remainLen > 1 ? 1 : 0;
-		this.remainLen = remainLen > 1 ? remainLen - 1 : 0;
+		remainLen = len > 0 ? len - 1 : 0;
+		start = remainLen > 0 ? 1 : 0;
 	}
 
 	/**
@@ -194,12 +203,13 @@ public class Analyzer {
 			if (i > start + remainLen - Constant.POINT_PER_UART) {
 				break;
 			}
-			int val = WaveDecoder.decodeUART(buffer, i);
+			int val = WaveDecoder.decodeUART(buffer, i, false);
 			if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
 				System.out.println("StartFlag found:" + i + "\t" + remainLen);
 				remainLen -= (i - start + Constant.POINT_PER_UART);
 				reallocBuffer(i, remainLen + Constant.POINT_PER_UART);
-				//System.out.println("Head:\n" + Util.getHex(buffer, 0, Constant.POINT_PER_UART));
+				// System.out.println("Head:\n"
+				// + Util.getHex(buffer, 0, Constant.POINT_PER_UART));
 				start = Constant.POINT_PER_UART;
 				result[bytesDecoded++] = Constant.PACKET_START_FLAG;
 				startPointFound = true;
@@ -224,7 +234,7 @@ public class Analyzer {
 		if (remainLen < Constant.POINT_PER_UART) {
 			return false;
 		}
-		int val = WaveDecoder.decodeUART(buffer, start);
+		int val = WaveDecoder.decodeUART(buffer, start, false);
 		if (val >= 0) {
 			System.out.println("PacketSize found:" + val);
 			start += Constant.POINT_PER_UART;
@@ -235,7 +245,7 @@ public class Analyzer {
 			finishPacket();
 			return true;
 		} else {
-			resetOnDecodeError(remainLen);
+			resetOnDecodeError();
 		}
 		return false;
 	}
@@ -249,7 +259,7 @@ public class Analyzer {
 		if (remainLen < Constant.POINT_PER_UART) {
 			return false;
 		}
-		int val = WaveDecoder.decodeUART(buffer, start);
+		int val = WaveDecoder.decodeUART(buffer, start, true);
 		if (val >= 0) {
 			start += Constant.POINT_PER_UART;
 			remainLen -= Constant.POINT_PER_UART;
@@ -257,7 +267,10 @@ public class Analyzer {
 			finishPacket();
 			return true;
 		} else {
-			resetOnDecodeError(remainLen);
+			if (val == -101 || val == -102) {
+				System.out.println("UART start error:" + val);
+			}
+			resetOnDecodeError();
 		}
 		return false;
 	}
