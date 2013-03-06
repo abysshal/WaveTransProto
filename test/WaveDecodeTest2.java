@@ -1,4 +1,5 @@
 import info.dreamingfish123.WaveTransProto.codec.Constant;
+import info.dreamingfish123.WaveTransProto.codec.Util;
 import info.dreamingfish123.WaveTransProto.codec.WaveDecoder;
 
 import java.io.FileInputStream;
@@ -8,11 +9,17 @@ import java.io.IOException;
 
 public class WaveDecodeTest2 {
 
+	public static final String PATH_NAME = "./test/AC3_S5570/wavein_AC3_S5570_1_clip1";
+
 	public static void main(String[] args) {
+		resampleAndToHex();
+	}
+
+	public static void toBin() {
 		try {
 			byte[] buffer = new byte[1024];
-			FileInputStream fis = new FileInputStream("./test/res/wavein_mbp_S5570_4_8bit.wav");
-			FileOutputStream fos = new FileOutputStream("./test/res/wavein_mbp_S5570_4_8bit.txt");
+			FileInputStream fis = new FileInputStream(PATH_NAME + ".wav");
+			FileOutputStream fos = new FileOutputStream(PATH_NAME + ".txt");
 			int read = 0;
 			while ((read = fis.read(buffer)) > 0) {
 				// short[] data = byteArray2ShortArray(buffer);
@@ -34,21 +41,30 @@ public class WaveDecodeTest2 {
 		}
 	}
 
-	public static String getHex(byte[] bytes) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < bytes.length; i++) {
-			if (i != 0 && i % 16 == 0) {
-				sb.append("\n");
+	public static void resampleAndToHex() {
+		try {
+			byte[] buffer = new byte[1024];
+			FileInputStream fis = new FileInputStream(PATH_NAME + ".wav");
+			FileOutputStream fos = new FileOutputStream(PATH_NAME + "_8bit.wav");
+			int read = fis.read(buffer, 0, 44);
+			buffer[34] = 8;
+			Util.int2byte(((int) fis.getChannel().size() - 44) / 2, buffer,
+					Constant.WAVE_DATA_LEN_OFFSET);
+			Util.int2byte(((int) fis.getChannel().size() - 44) / 2
+					+ Constant.WAVE_HEAD_LEN - 8, buffer,
+					Constant.WAVE_FILE_LEN_OFFSET);
+			fos.write(buffer, 0, 44);
+			while ((read = fis.read(buffer)) > 0) {
+				fos.write(Util.resample16To8bit(buffer, 0, read));
 			}
-			sb.append(String.format("%02X ", bytes[i]));
+			fis.close();
+			fos.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return sb.toString();
-	}
-
-	public static short[] byteArray2ShortArray(byte[] data) {
-		short[] retVal = new short[data.length / 2];
-		for (int i = 0; i < retVal.length; i++)
-			retVal[i] = (short) ((data[i * 2] & 0xff) | (data[i * 2 + 1] & 0xff) << 8);
-		return retVal;
 	}
 }

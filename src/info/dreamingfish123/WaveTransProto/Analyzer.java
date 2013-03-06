@@ -167,13 +167,13 @@ public class Analyzer {
 	 */
 	private void resetOnDecodeError() {
 		System.out.println("Error occurred, decoded bytes:" + bytesDecoded);
-		// System.out.println("ErrorBefor:\n"
+		// System.out.println("ErrorAll:\n"
 		// + Util.getHex(buffer, 0, start));
-		// System.out.println("ErrorBefor:\n"
-		// + Util.getHex(buffer, start - Constant.POINT_PER_UART,
-		// Constant.POINT_PER_UART));
-		// System.out.println("Error:\n"
-		// + Util.getHex(buffer, start, Constant.POINT_PER_UART));
+		 System.out.println("ErrorBefor:\n"
+		 + Util.getHex(buffer, start - Constant.POINT_PER_UART,
+		 Constant.POINT_PER_UART));
+		 System.out.println("Error:\n"
+		 + Util.getHex(buffer, start, Constant.POINT_PER_UART));
 
 		int len = start + remainLen;
 		resetAll();

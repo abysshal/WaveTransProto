@@ -26,6 +26,14 @@ public class Constant {
 			0x08, 0x00, 0x64, 0x61, 0x74, 0x61, 0x00, 0x00, 0x00, 0x00 };
 	public static final byte PACKET_START_FLAG = (byte) 0xFF;
 
+	/**
+	 * 1 - on PC;<br/>
+	 * 0 - on Android;
+	 */
 	public static final int MANCHESTER_HIGH = 1;
+	/**
+	 * 0 - on PC;<br/>
+	 * 1 - on Android;
+	 */
 	public static final int MANCHESTER_LOW = 0;
 }

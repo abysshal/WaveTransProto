@@ -30,7 +30,7 @@ public class WaveEncodeTest {
 		for (int i = 0; i < SDATA_B.length; i++) {
 			SDATA_B[i] = (byte) SDATA[i];
 		}
-		
+
 		byte[] ret = WaveEncoder.encode(SDATA_B);
 		try {
 			FileOutputStream fos = new FileOutputStream("./test/waveout.wav");
@@ -43,5 +43,24 @@ public class WaveEncodeTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public static boolean compareSData(byte[] tar) {
+		byte SDATA_B[] = new byte[SDATA.length];
+		for (int i = 0; i < SDATA_B.length; i++) {
+			SDATA_B[i] = (byte) SDATA[i];
+		}
+		if (tar == null) {
+			return false;
+		}
+		if (SDATA_B.length != tar.length) {
+			return false;
+		}
+		for (int i = 0; i < SDATA_B.length; i++) {
+			if (SDATA_B[i] != tar[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

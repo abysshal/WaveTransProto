@@ -8,28 +8,42 @@ public class AnalyzerTest2 {
 
 	// public static final String path = "./test/waveout.wav";
 
-	public static final String path = "./test/res/wavein_mbp_S5570_4.wav";
+	public static final String path = "./test/AC3_S5570/wavein_AC3_S5570_1_clip1.wav";
 
 	public static void main(String[] args) throws Exception {
 		Analyzer analyzer = new Analyzer();
 		FileInputStream fis = new FileInputStream(path);
-		fis.skip(44);
 		byte[] tmp = new byte[6000];
+		int size = fis.read(tmp, 0, 44);
+		if (size < 44) {
+			System.out.println("Wave file too small:" + size);
+			fis.close();
+			return;
+		}
+		int format = tmp[34];
+		System.out.println("AudioFormat:" + format);
 		while (true) {
-			int size = fis.read(tmp);
+			size = fis.read(tmp);
 			if (size <= 0) {
 				System.out.println("File finished..:" + size);
 				break;
 			}
-			// System.out.println("New data read:" + size);
-			if (size % 2 == 1) {
-				throw new Exception("read size even..");
-			}
-			byte[] ret = Util.resample16To8bit(tmp, 0, size);
-			// System.out.println("Ori:\n" + Util.getHex(tmp) );
-			// System.out.println("8bit:\n" + Util.getHex(ret));
-			if (!analyzer.appendBuffer(ret)) {
-				System.out.println("analyzer buffer full.");
+			System.out.println("New data read:" + size);
+
+			if (format == 16) {
+//				System.out.println("Hex:\n"+ Util.getHex(Util.resample16To8bit(tmp)));
+//				if(true)System.exit(1);
+				if (!analyzer.appendBuffer(Util.resample16To8bit(tmp, 0, size))) {
+					System.out.println("analyzer buffer full.");
+					break;
+				}
+			} else if (format == 8) {
+				if (!analyzer.appendBuffer(tmp, 0, size)) {
+					System.out.println("analyzer buffer full.");
+					break;
+				}
+			} else {
+				System.out.println("Unsupported Audio Format:" + format);
 				break;
 			}
 			if (analyzer.analyze()) {
@@ -39,8 +53,9 @@ public class AnalyzerTest2 {
 						+ packet.getPayload().length);
 				System.out.println("Packet:\n"
 						+ Util.getHex(packet.getPacketBytes()));
+				System.out.println("CompareResult:"
+						+ WaveEncodeTest.compareSData(packet.getPacketBytes()));
 				analyzer.resetForNext();
-				// break;
 			}
 		}
 

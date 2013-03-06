@@ -1,5 +1,7 @@
 package info.dreamingfish123.WaveTransProto.codec;
 
+import java.nio.Buffer;
+
 public class WaveDecoder {
 
 	/**
@@ -55,14 +57,14 @@ public class WaveDecoder {
 		int ave2 = 0;
 
 		for (int i = 0; i < Constant.POINT_PER_BIT_HALF; i++) {
-			ave1 += (0xff & wavein[offset + i]);
-			ave2 += (0xff & wavein[offset + i + Constant.POINT_PER_BIT_HALF]);
+			ave1 += (wavein[offset + i]);
+			ave2 += (wavein[offset + i + Constant.POINT_PER_BIT_HALF]);
 		}
 
 		if (ave1 - ave2 > Constant.WAVE_DIFF_SUM_LEVEL) {
-			return Constant.MANCHESTER_LOW;
-		} else if (ave2 - ave1 > Constant.WAVE_DIFF_SUM_LEVEL) {
 			return Constant.MANCHESTER_HIGH;
+		} else if (ave2 - ave1 > Constant.WAVE_DIFF_SUM_LEVEL) {
+			return Constant.MANCHESTER_LOW;
 		} else {
 			return -1;
 		}
@@ -96,8 +98,26 @@ public class WaveDecoder {
 		} else if (cnt2 == Constant.POINT_PER_BIT_HALF && cnt1 == 0) {
 			return Constant.MANCHESTER_LOW;
 		} else {
-			if (faultTolerance) {
-				return convertBit2(wavein, offset);
+			if (true) {
+				if (wavein[offset] > 0 && wavein[offset + 1] > 0
+						&& wavein[offset + 2] < 0 && wavein[offset + 3] < 0
+						&& wavein[offset + 4] < 0 && wavein[offset + 5] < 0) {
+					return Constant.MANCHESTER_HIGH;
+				} else if (wavein[offset] > 0 && wavein[offset + 1] > 0
+						&& wavein[offset + 2] > 0 && wavein[offset + 3] > 0
+						&& wavein[offset + 4] < 0 && wavein[offset + 5] < 0) {
+					return Constant.MANCHESTER_HIGH;
+				} else if (wavein[offset] < 0 && wavein[offset + 1] < 0
+						&& wavein[offset + 2] > 0 && wavein[offset + 3] > 0
+						&& wavein[offset + 4] > 0 && wavein[offset + 5] > 0) {
+					return Constant.MANCHESTER_LOW;
+				} else if (wavein[offset] < 0 && wavein[offset + 1] < 0
+						&& wavein[offset + 2] < 0 && wavein[offset + 3] < 0
+						&& wavein[offset + 4] > 0 && wavein[offset + 5] > 0) {
+					return Constant.MANCHESTER_LOW;
+				} else {
+					return convertBit2(wavein, offset);
+				}
 			} else {
 				return -1;
 			}
