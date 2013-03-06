@@ -1,6 +1,6 @@
-import info.dreamingfish123.WaveTransProto.Analyzer;
 import info.dreamingfish123.WaveTransProto.codec.Constant;
 import info.dreamingfish123.WaveTransProto.codec.Util;
+import info.dreamingfish123.WaveTransProto.impl.StaticSequenceAnalyzer;
 import info.dreamingfish123.WaveTransProto.packet.WTPPacket;
 
 import java.io.FileInputStream;
@@ -17,7 +17,7 @@ public class AnalyzerTest {
 		byte[] tmp = new byte[Constant.WAVEOUT_BUF_SIZE];
 		int size = fis.read(tmp);
 		fis.close();
-		Analyzer analyzer = new Analyzer();
+		StaticSequenceAnalyzer analyzer = new StaticSequenceAnalyzer();
 		System.out.println("Hex:\n" + Util.getHex(tmp, 44, 120));
 		if (analyzer.appendBuffer(tmp, 44, size - 44)) {
 			System.out.println("Add Buffer SUCC!");

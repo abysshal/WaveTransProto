@@ -1,5 +1,6 @@
-import info.dreamingfish123.WaveTransProto.Analyzer;
 import info.dreamingfish123.WaveTransProto.codec.Util;
+import info.dreamingfish123.WaveTransProto.impl.StaticSequenceAnalyzer;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -36,7 +37,7 @@ public class AnalyzerTest3 {
 
 		for (File currFile : files) {
 			found = 0;
-			Analyzer analyzer = new Analyzer();
+			StaticSequenceAnalyzer analyzer = new StaticSequenceAnalyzer();
 			FileInputStream fis = new FileInputStream(currFile);
 			int size = fis.read(tmp, 0, 44);
 			if (size < 44) {

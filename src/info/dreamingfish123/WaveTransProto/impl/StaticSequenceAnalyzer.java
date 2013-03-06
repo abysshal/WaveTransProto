@@ -1,11 +1,12 @@
-package info.dreamingfish123.WaveTransProto;
+package info.dreamingfish123.WaveTransProto.impl;
 
+import info.dreamingfish123.WaveTransProto.WaveinAnalyzer;
 import info.dreamingfish123.WaveTransProto.codec.Constant;
 import info.dreamingfish123.WaveTransProto.codec.Util;
 import info.dreamingfish123.WaveTransProto.codec.WaveDecoder;
 import info.dreamingfish123.WaveTransProto.packet.WTPPacket;
 
-public class Analyzer {
+public class StaticSequenceAnalyzer implements WaveinAnalyzer {
 
 	/* wavein buffer */
 	private int bufferSize = Constant.WAVEOUT_BUF_SIZE * 2;
@@ -27,7 +28,7 @@ public class Analyzer {
 	/**
 	 * with default buffer size.
 	 */
-	public Analyzer() {
+	public StaticSequenceAnalyzer() {
 		buffer = new byte[bufferSize];
 		resetAll();
 	}
@@ -37,7 +38,7 @@ public class Analyzer {
 	 * 
 	 * @param bufferSize
 	 */
-	public Analyzer(int bufferSize) {
+	public StaticSequenceAnalyzer(int bufferSize) {
 		this.bufferSize = bufferSize;
 		buffer = new byte[bufferSize];
 		resetAll();
@@ -167,13 +168,14 @@ public class Analyzer {
 	 */
 	private void resetOnDecodeError() {
 		System.out.println("Error occurred, decoded bytes:" + bytesDecoded);
+		// if (packetSize == 200)
 		// System.out.println("ErrorAll:\n"
-		// + Util.getHex(buffer, 0, start));
-		 System.out.println("ErrorBefor:\n"
-		 + Util.getHex(buffer, start - Constant.POINT_PER_UART,
-		 Constant.POINT_PER_UART));
-		 System.out.println("Error:\n"
-		 + Util.getHex(buffer, start, Constant.POINT_PER_UART));
+		// + Util.getHex(buffer, 0, start + remainLen));
+		System.out.println("ErrorBefor:\n"
+				+ Util.getHex(buffer, start - Constant.POINT_PER_UART,
+						Constant.POINT_PER_UART));
+		System.out.println("Error:\n"
+				+ Util.getHex(buffer, start, Constant.POINT_PER_UART));
 
 		int len = start + remainLen;
 		resetAll();
