@@ -35,6 +35,7 @@ public class AnalyzerTest3 {
 		byte[] tmp = new byte[6000];
 		int found = 0;
 
+		
 		for (File currFile : files) {
 			found = 0;
 			StaticSequenceAnalyzer analyzer = new StaticSequenceAnalyzer();

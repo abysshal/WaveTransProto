@@ -11,14 +11,14 @@ import java.util.List;
 public class AnalyzerTest2 {
 
 	// public static final String path = "./test/data_pc_in.wav";
-//	public static final String path = "./test/waveout.wav";
+	// public static final String path = "./test/waveout.wav";
 
 	public static final String path = "./test/AC3_S5570/wavein_AC3_S5570_1_clip1.wav";
 
 	public static void main(String[] args) throws Exception {
 		List<WTPPacket> results = new ArrayList<WTPPacket>();
 		WaveinAnalyzer analyzer = new DynamicSequenceAnalyzer();
-//		WaveinAnalyzer analyzer = new StaticSequenceAnalyzer();
+		// WaveinAnalyzer analyzer = new StaticSequenceAnalyzer();
 		FileInputStream fis = new FileInputStream(path);
 		byte[] tmp = new byte[6000];
 		int size = fis.read(tmp, 0, 44);
@@ -38,8 +38,8 @@ public class AnalyzerTest2 {
 			System.out.println("New data read:" + size);
 
 			if (format == 16) {
-//				System.out.println("Hex:\n"
-//						+ Util.getHex(Util.resample16To8bit(tmp)));
+				// System.out.println("Hex:\n"
+				// + Util.getHex(Util.resample16To8bit(tmp)));
 				if (!analyzer.appendBuffer(Util.resample16To8bit(tmp, 0, size))) {
 					System.out.println("analyzer buffer full.");
 					break;

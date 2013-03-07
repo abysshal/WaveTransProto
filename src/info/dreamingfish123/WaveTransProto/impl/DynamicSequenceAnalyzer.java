@@ -211,7 +211,8 @@ public class DynamicSequenceAnalyzer implements WaveinAnalyzer {
 			if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
 				System.out.println("StartFlag found:" + lastStart + "\t"
 						+ remainLen);
-				System.out.println("start&last start:" + start + "\t" + lastStart);
+				System.out.println("start&last start:" + start + "\t"
+						+ lastStart);
 				reallocBuffer(lastStart, lastRemainLen);
 				// System.out.println("Head:\n"
 				// + Util.getHex(buffer, 0, Constant.POINT_PER_UART));
@@ -285,11 +286,105 @@ public class DynamicSequenceAnalyzer implements WaveinAnalyzer {
 	 *         0 - bit 0;<br/>
 	 *         other - error<br/>
 	 */
-	private int convertBit() {
+	private int convertBit2() {
 		boolean is10 = buffer[start] > 0;
 		boolean isTurned = false;
 		int cnt1 = 1;
 		int cnt2 = 0;
+
+		for (int i = start + 1; i < Constant.POINT_PER_BIT + start; i++) {
+			if (is10 && !isTurned) {
+				if (buffer[i] > 0) {
+					cnt1++;
+				} else {
+					isTurned = true;
+					cnt2++;
+				}
+			} else if (!is10 && !isTurned) {
+				if (buffer[i] > 0) {
+					isTurned = true;
+					cnt2++;
+				} else {
+					cnt1++;
+				}
+			} else if (is10 && isTurned) {
+				if (buffer[i] > 0) {
+					break;
+				} else {
+					cnt2++;
+				}
+			} else if (!is10 && isTurned) {
+				if (buffer[i] > 0) {
+					cnt2++;
+				} else {
+					break;
+				}
+			}
+		}
+		if (!isTurned) {
+			return -201;
+		}
+
+		if (cnt1 == Constant.POINT_PER_BIT_HALF
+				&& cnt2 == Constant.POINT_PER_BIT_HALF) {
+			start += Constant.POINT_PER_BIT;
+			remainLen -= Constant.POINT_PER_BIT;
+			return (is10 ? Constant.MANCHESTER_HIGH : Constant.MANCHESTER_LOW);
+		}
+
+		if (cnt1 == Constant.POINT_PER_BIT_HALF - 1
+				&& cnt2 >= Constant.POINT_PER_BIT_HALF) {
+			start += (cnt1 + cnt2);
+			remainLen -= (cnt1 + cnt2);
+			return (is10 ? Constant.MANCHESTER_HIGH : Constant.MANCHESTER_LOW);
+		}
+
+		if (cnt1 >= Constant.POINT_PER_BIT_HALF
+				&& cnt2 == Constant.POINT_PER_BIT_HALF - 1) {
+			start += (cnt1 + cnt2);
+			remainLen -= (cnt1 + cnt2);
+			return (is10 ? Constant.MANCHESTER_HIGH : Constant.MANCHESTER_LOW);
+
+		}
+
+		return -1;
+	}
+
+	/**
+	 * convert some sample point bytes to a bit data.<br/>
+	 * Use abs level
+	 * 
+	 * @return 1 - bit 1;<br/>
+	 *         0 - bit 0;<br/>
+	 *         other - error<br/>
+	 */
+	private int convertBit() {
+		boolean is10 = buffer[start] > 0;
+		boolean isTurned = false;
+		int ave1 = 0;
+		int ave2 = 0;
+
+		for (int i = 0; i < Constant.POINT_PER_BIT_HALF; i++) {
+			ave1 += buffer[start + i];
+			ave2 += buffer[start + i + Constant.POINT_PER_BIT_HALF];
+		}
+		
+		if(ave1 > 0 && ave2 <0) {
+			if(buffer[start+2] < 0 && buffer[start+3] <0) {
+				start+=5;
+				remainLen -=5;
+			}else if(buffer[start+2] > 0 && buffer[start+3] >0) {
+				start += 7;
+				remainLen -= 7;
+			} else {
+				start+=6;
+				remainLen-=6;
+			}
+		}else if(ave1 < 0 && ave2 > 0) {
+			
+		}else {
+			return -201;
+		}
 
 		for (int i = start + 1; i < Constant.POINT_PER_BIT + start; i++) {
 			if (is10 && !isTurned) {
