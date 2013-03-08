@@ -1,10 +1,12 @@
 import info.dreamingfish123.WaveTransProto.WaveinAnalyzer;
 import info.dreamingfish123.WaveTransProto.codec.Util;
+import info.dreamingfish123.WaveTransProto.impl.DynamicAverageAnalyzer;
 import info.dreamingfish123.WaveTransProto.impl.StaticSequenceAnalyzer;
 import info.dreamingfish123.WaveTransProto.impl.DynamicSequenceAnalyzer;
 import info.dreamingfish123.WaveTransProto.packet.WTPPacket;
 
 import java.io.FileInputStream;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +15,11 @@ public class AnalyzerTest2 {
 	// public static final String path = "./test/data_pc_in.wav";
 	// public static final String path = "./test/waveout.wav";
 
-	public static final String path = "./test/AC3_S5570/wavein_AC3_S5570_1_clip1.wav";
+	public static final String path = "./test/AC3_S5570_pro/wavein_AC3_S5570_4_pro.wav";
 
 	public static void main(String[] args) throws Exception {
 		List<WTPPacket> results = new ArrayList<WTPPacket>();
-		WaveinAnalyzer analyzer = new DynamicSequenceAnalyzer();
+		WaveinAnalyzer analyzer = new DynamicAverageAnalyzer();
 		// WaveinAnalyzer analyzer = new StaticSequenceAnalyzer();
 		FileInputStream fis = new FileInputStream(path);
 		byte[] tmp = new byte[6000];
@@ -38,14 +40,18 @@ public class AnalyzerTest2 {
 			System.out.println("New data read:" + size);
 
 			if (format == 16) {
-				// System.out.println("Hex:\n"
-				// + Util.getHex(Util.resample16To8bit(tmp)));
+				System.out.println("Hex:\n"
+						+ Util.getHex(Util.resample16To8bit(tmp), 0, 60));
 				if (!analyzer.appendBuffer(Util.resample16To8bit(tmp, 0, size))) {
 					System.out.println("analyzer buffer full.");
 					break;
 				}
 			} else if (format == 8) {
-				if (!analyzer.appendBuffer(tmp, 0, size)) {
+				if (true) {
+					System.out.println("Hex:\n" + Util.getHex(tmp, 0, 60));
+					// break;
+				}
+				if (!analyzer.appendBuffer(tmp, 0, 600)) {
 					System.out.println("analyzer buffer full.");
 					break;
 				}
@@ -59,6 +65,7 @@ public class AnalyzerTest2 {
 				results.add(packet);
 				analyzer.resetForNext();
 			}
+//			break;
 		}
 
 		fis.close();

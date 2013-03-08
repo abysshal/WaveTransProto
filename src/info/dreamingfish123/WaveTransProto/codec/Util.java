@@ -42,7 +42,7 @@ public class Util {
 		for (int i = 0; i < ret.length; i++) {
 			short s0 = (short) (bytes[i * 2 + offset] & 0xff);
 			short s1 = (short) (bytes[i * 2 + offset + 1] & 0xff);
-			ret[i] = (byte) (((short) (s0 | s1 << 8)) / 256);
+			ret[i] = (byte) (((short) (s0 | s1 << 8)) >> 8);
 		}
 		return ret;
 	}
