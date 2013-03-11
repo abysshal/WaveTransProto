@@ -1,5 +1,8 @@
 package info.dreamingfish123.WaveTransProto.codec;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+
 public class Util {
 
 	public static void int2byte(int val, byte[] a, int offset) {
@@ -46,6 +49,19 @@ public class Util {
 		}
 		return ret;
 	}
+
+//	public static byte[] resample16To8bit(byte[] bytes, int offset, int len) {
+//		DataInputStream dis = new ByteArrayInputStream(bytes, offset, len);
+//		dis = new data
+//		dis.read
+//		byte[] ret = new byte[len / 2];
+//		for (int i = 0; i < ret.length; i++) {
+//			short s0 = (short) (bytes[i * 2 + offset] & 0xff);
+//			short s1 = (short) (bytes[i * 2 + offset + 1] & 0xff);
+//			ret[i] = (byte) (((short) (s0 | s1 << 8)+Short.));
+//		}
+//		return ret;
+//	}
 
 	public static short byteToShort(byte[] b, int offset) {
 		short s0 = (short) (b[offset] & 0xff);

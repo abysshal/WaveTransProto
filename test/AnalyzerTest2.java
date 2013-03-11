@@ -41,14 +41,15 @@ public class AnalyzerTest2 {
 
 			if (format == 16) {
 				System.out.println("Hex:\n"
-						+ Util.getHex(Util.resample16To8bit(tmp), 0, 60));
+						+ Util.getHex(Util.resample16To8bit(tmp), 0, 160));
+				if(true) return;
 				if (!analyzer.appendBuffer(Util.resample16To8bit(tmp, 0, size))) {
 					System.out.println("analyzer buffer full.");
 					break;
 				}
 			} else if (format == 8) {
 				if (true) {
-					System.out.println("Hex:\n" + Util.getHex(tmp, 0, 60));
+					System.out.println("Hex:\n" + Util.getHex(tmp, 0, 160));
 					// break;
 				}
 				if (!analyzer.appendBuffer(tmp, 0, 600)) {
