@@ -9,12 +9,12 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 
 	/* wavein buffer */
 	private int bufferSize = Constant.WAVEOUT_BUF_SIZE * 2;
-	private byte[] buffer;
+	private int[] buffer;
 	private int start = 0;
 	private int lastStart = 0;
 	private int lastRemainLen = 0;
 	private int remainLen = 0;
-	private byte[] result = new byte[Constant.MAX_TRANSFER_DATA_LEN];
+	private byte[] result = new byte[Constant.MAX_TRANSFER_DATA_LEN * 2];
 
 	/* result data packet */
 	private WTPPacket packet = null;
@@ -30,7 +30,7 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 	 * with default buffer size.
 	 */
 	public DynamicAverageAnalyzer() {
-		buffer = new byte[bufferSize];
+		buffer = new int[bufferSize];
 		resetAll();
 	}
 
@@ -41,7 +41,7 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 	 */
 	public DynamicAverageAnalyzer(int bufferSize) {
 		this.bufferSize = bufferSize;
-		buffer = new byte[bufferSize];
+		buffer = new int[bufferSize];
 		resetAll();
 	}
 
@@ -84,6 +84,22 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 		}
 		System.arraycopy(data, offset, buffer, start + remainLen, len);
 		remainLen += len;
+		return true;
+	}
+
+	/**
+	 * add wavein data in Integer format to this analyzer's buffer
+	 * 
+	 * @param val
+	 *            the transformed wavein data
+	 * @return true if there is enough space of the buffer to append this
+	 */
+	public boolean appendBuffer(int val) {
+		if (start + remainLen + 1 > bufferSize) {
+			return false;
+		}
+		buffer[start + remainLen] = val;
+		remainLen += 1;
 		return true;
 	}
 
@@ -168,17 +184,18 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 	 *            how much bytes remained to be moved
 	 */
 	private void resetOnDecodeError() {
-		System.out.println("Error occurred, decoded bytes:" + bytesDecoded);
+		System.out.println("Error occurred, decoded bytes:" + bytesDecoded
+				+ "\tPktSize:" + packetSize);
 		// if (packetSize == 200)
 		// System.out.println("ErrorAll:\n"
 		// + Util.getHex(buffer, 0, start + remainLen));
-		System.out.println("ErrorBefor:\n"
-				+ Util.getHex(buffer,
-						lastStart - Constant.POINT_PER_UART > 0 ? lastStart
-								- Constant.POINT_PER_UART : 0,
-						Constant.POINT_PER_UART * 2));
-		System.out.println("Error:\n"
-				+ Util.getHex(buffer, lastStart, Constant.POINT_PER_UART));
+		// System.out.println("ErrorBefor:\n"
+		// + Util.getHex(buffer,
+		// lastStart - Constant.POINT_PER_UART > 0 ? lastStart
+		// - Constant.POINT_PER_UART : 0,
+		// Constant.POINT_PER_UART * 2));
+		// System.out.println("Error:\n"
+		// + Util.getHex(buffer, lastStart, Constant.POINT_PER_UART));
 
 		int len = start + remainLen;
 		resetAll();
@@ -207,23 +224,29 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 			if (remainLen < Constant.POINT_PER_UART) {
 				break;
 			}
-			int val = decodeUART();
-//			System.out.println("val:" + val);
-			if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
-				System.out.println("StartFlag found:" + lastStart + "\t"
-						+ remainLen);
-				System.out.println("start&last start:" + start + "\t"
-						+ lastStart);
-				reallocBuffer(lastStart, lastRemainLen);
-				// System.out.println("Head:\n"
-				// + Util.getHex(buffer, 0, Constant.POINT_PER_UART));
-				start = (start - lastStart);
-				result[bytesDecoded++] = Constant.PACKET_START_FLAG;
-				startPointFound = true;
-				return true;
+			if (buffer[start] > buffer[start + Constant.POINT_PER_BIT_HALF]
+					+ Constant.WAVE_DIFF_LEVEL) {
+				int val = decodeUART();
+				// System.out.println("val:" + val);
+				if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
+					System.out.println("StartFlag found:" + lastStart + "\t"
+							+ remainLen);
+					System.out.println("start&last start:" + start + "\t"
+							+ lastStart);
+					reallocBuffer(lastStart, lastRemainLen);
+					// System.out.println("Head:\n"
+					// + Util.getHex(buffer, 0, Constant.POINT_PER_UART));
+					start = (start - lastStart);
+					result[bytesDecoded++] = Constant.PACKET_START_FLAG;
+					startPointFound = true;
+					return true;
+				} else {
+					start = lastStart + 1;
+					remainLen = lastRemainLen - 1;
+				}
 			} else {
-				start = lastStart + 1;
-				remainLen = lastRemainLen - 1;
+				start += 1;
+				remainLen -= 1;
 			}
 		}
 
@@ -333,37 +356,40 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 
 		lastStart = start;
 		lastRemainLen = remainLen;
+		StringBuilder sb = new StringBuilder();
+		sb.append("U:" + start + "\t");
 
-		retTmp = convertBit();
-		if (retTmp < 0 || retTmp == 1) {
-			return -101;
-		}
-
-//		System.out.println("Start:" + start + "\tBit:" + retTmp);
-		start += Constant.POINT_PER_BIT;
-
-		for (int i = 0; i < 8; i++) {
+		try {
 			retTmp = convertBit();
-			if (retTmp < 0) {
-				return -103;
+			if (retTmp < 0 || retTmp == 1) {
+				return -101;
 			}
-//			System.out.println("Data:" + start + "\tBit:" + retTmp);
 
+			sb.append("S:" + retTmp + "\tD:");
 			start += Constant.POINT_PER_BIT;
-			ret += (retTmp << (7 - i));
+
+			for (int i = 0; i < 8; i++) {
+				retTmp = convertBit();
+				if (retTmp < 0) {
+					return -103;
+				}
+				sb.append(retTmp);
+				start += Constant.POINT_PER_BIT;
+				ret += (retTmp << (7 - i));
+			}
+
+			retTmp = convertBit();
+			if (retTmp <= 0) {
+				return -102;
+			}
+			start += Constant.POINT_PER_BIT;
+			sb.append("\tE:" + retTmp + "\n");
+
+			remainLen -= (start - lastStart);
+		} finally {
+			// System.out.println(sb.toString());
 		}
-
-		retTmp = convertBit();
-		if (retTmp <= 0) {
-			return -102;
-		}
-		start += Constant.POINT_PER_BIT;
-//		System.out.println("End:" + start + "\tBit:" + retTmp);
-
-		remainLen -= (start - lastStart);
-
 		// System.out.println("Decode succ:" + ret);
 		return ret;
 	}
-
 }
