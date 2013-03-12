@@ -12,7 +12,8 @@ public class AnalyzerTest4 {
 	// public static final String path = "./test/data_pc_in.wav";
 	// public static final String path = "./test/waveout.wav";
 
-	public static final String path = "./test/AC3_S5570_pro/wavein_AC3_S5570_6_pro_8bit_g_r.wav";
+	public static final String path = "./test/AC3_S5570_pro/wavein_AC3_S5570_6_pro_a_r.wav";
+//	public static final String path= "./test/AC3_S5570_pro/wavein_1363066331876_r.wav";
 
 	public static void main(String[] args) throws Exception {
 		List<WTPPacket> results = new ArrayList<WTPPacket>();
@@ -41,20 +42,20 @@ public class AnalyzerTest4 {
 					for (int i = 0; i < 6000; i++) {
 						if (format == 16) {
 							tmpRead = dis.readShort();
-							tmpRead = invertPhaseAnd16To8(tmpRead);
+//							tmpRead = invertPhaseAnd16To8(tmpRead);
 							totalRead++;
-//							if (totalRead > 0 && totalRead < 100) {
-//								System.out.println("read" + totalRead + "\t:"
-//										+ tmpRead);
-//							}
+							if (totalRead > 0 && totalRead < 100) {
+								System.out.println("read" + totalRead + "\t:"
+										+ tmpRead);
+							}
 							analyzer.appendBuffer(tmpRead);
 						} else if (format == 8) {
 							tmpRead = (dis.readByte() & 0xff);
 							totalRead++;
-//							if (totalRead > 0 && totalRead < 100) {
-//								System.out.println("read" + totalRead + "\t:"
-//										+ tmpRead);
-//							}
+							if (totalRead > 0 && totalRead < 100) {
+								System.out.println("read" + totalRead + "\t:"
+										+ tmpRead);
+							}
 							analyzer.appendBuffer(tmpRead);
 						}
 					}
