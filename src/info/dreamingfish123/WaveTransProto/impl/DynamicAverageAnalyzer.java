@@ -231,8 +231,8 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 				if (val == (Constant.PACKET_START_FLAG & 0xff)) { // found
 					System.out.println("StartFlag found:" + lastStart + "\t"
 							+ remainLen);
-					System.out.println("start&last start:" + start + "\t"
-							+ lastStart);
+					// System.out.println("start&last start:" + start + "\t"
+					// + lastStart);
 					reallocBuffer(lastStart, lastRemainLen);
 					// System.out.println("Head:\n"
 					// + Util.getHex(buffer, 0, Constant.POINT_PER_UART));

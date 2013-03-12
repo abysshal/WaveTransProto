@@ -12,7 +12,7 @@ public class AnalyzerTest4 {
 	// public static final String path = "./test/data_pc_in.wav";
 	// public static final String path = "./test/waveout.wav";
 
-	public static final String path = "./test/AC3_S5570_pro/wavein_AC3_S5570_0_pro.wav";
+	public static final String path = "./test/AC3_S5570_pro/wavein_AC3_S5570_6_pro_8bit_g_r.wav";
 
 	public static void main(String[] args) throws Exception {
 		List<WTPPacket> results = new ArrayList<WTPPacket>();
@@ -40,15 +40,22 @@ public class AnalyzerTest4 {
 				try {
 					for (int i = 0; i < 6000; i++) {
 						if (format == 16) {
-							tmpRead = (dis.readUnsignedShort() );
-//							totalRead++;
-//							if (totalRead > 1000 && totalRead < 1200) {
+							tmpRead = dis.readShort();
+							tmpRead = invertPhaseAnd16To8(tmpRead);
+							totalRead++;
+//							if (totalRead > 0 && totalRead < 100) {
 //								System.out.println("read" + totalRead + "\t:"
 //										+ tmpRead);
 //							}
 							analyzer.appendBuffer(tmpRead);
 						} else if (format == 8) {
-							analyzer.appendBuffer((dis.readByte() & 0xff));
+							tmpRead = (dis.readByte() & 0xff);
+							totalRead++;
+//							if (totalRead > 0 && totalRead < 100) {
+//								System.out.println("read" + totalRead + "\t:"
+//										+ tmpRead);
+//							}
+							analyzer.appendBuffer(tmpRead);
 						}
 					}
 					System.out.println("New data added:6000");
@@ -85,5 +92,21 @@ public class AnalyzerTest4 {
 		// System.out.println("CompareResult:"
 		// + WaveEncodeTest.compareSData(packet.getPacketBytes()));
 		// }
+	}
+
+	/**
+	 * invert phase & convert signed 16bit to unsigned 8bit
+	 * 
+	 * @param tmpRead
+	 * @return
+	 */
+	public static int invertPhaseAnd16To8(int tmpRead) {
+		tmpRead *= (-1);
+		if (tmpRead > 0x8000) {
+			tmpRead = 0x80 - (0xff - (tmpRead >> 8));
+		} else {
+			tmpRead = 0x80 + (tmpRead >> 8);
+		}
+		return tmpRead;
 	}
 }
