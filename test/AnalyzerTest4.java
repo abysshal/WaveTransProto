@@ -12,8 +12,8 @@ public class AnalyzerTest4 {
 	// public static final String path = "./test/data_pc_in.wav";
 	// public static final String path = "./test/waveout.wav";
 
-	public static final String path = "./test/AC3_S5570_pro/wavein_AC3_S5570_6_pro_a_r.wav";
-//	public static final String path= "./test/AC3_S5570_pro/wavein_1363066331876_r.wav";
+//	public static final String path = "./test/AC3_S5570_pro/wavein_AC3_S5570_6_pro_a_r.wav";
+	public static final String path= "./test/AC3_S5570_r/wavein_AC3_S5570_r_4_g_8bit.wav";
 
 	public static void main(String[] args) throws Exception {
 		List<WTPPacket> results = new ArrayList<WTPPacket>();
@@ -41,8 +41,8 @@ public class AnalyzerTest4 {
 				try {
 					for (int i = 0; i < 6000; i++) {
 						if (format == 16) {
-							tmpRead = dis.readShort();
-//							tmpRead = invertPhaseAnd16To8(tmpRead);
+							short a = dis.readShort();
+							tmpRead = invertPhaseAnd16To8(a);
 							totalRead++;
 							if (totalRead > 0 && totalRead < 100) {
 								System.out.println("read" + totalRead + "\t:"
@@ -101,13 +101,20 @@ public class AnalyzerTest4 {
 	 * @param tmpRead
 	 * @return
 	 */
-	public static int invertPhaseAnd16To8(int tmpRead) {
-		tmpRead *= (-1);
-		if (tmpRead > 0x8000) {
-			tmpRead = 0x80 - (0xff - (tmpRead >> 8));
-		} else {
-			tmpRead = 0x80 + (tmpRead >> 8);
-		}
-		return tmpRead;
+	public static int invertPhaseAnd16To8(short tmpRead) {
+////		tmpRead *= (-1);
+//		if (tmpRead > 0x8000) {
+//			return (0x80 - (0xff - (tmpRead >> 8)));
+//		} else {
+//			return (0x80 + (tmpRead >> 8));
+//		}
+////		tmpRead *= (-1);
+////		if (tmpRead > 0x8000) {
+////			tmpRead = 0x80 - (0xff - (tmpRead >> 8));
+////		} else {
+////			tmpRead = 0x80 +  (tmpRead >> 8);
+////		}
+		return ((tmpRead >> 8) & 0xff);
+		//		return tmpRead;
 	}
 }

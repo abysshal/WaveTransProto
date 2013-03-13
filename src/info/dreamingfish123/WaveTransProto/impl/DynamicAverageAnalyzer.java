@@ -5,7 +5,7 @@ import info.dreamingfish123.WaveTransProto.codec.Constant;
 import info.dreamingfish123.WaveTransProto.codec.Util;
 import info.dreamingfish123.WaveTransProto.packet.WTPPacket;
 
-public class DynamicAverageAnalyzer implements WaveinAnalyzer {
+public class DynamicAverageAnalyzer {
 
 	/* wavein buffer */
 	private int bufferSize = Constant.WAVEOUT_BUF_SIZE * 2;
@@ -63,8 +63,9 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 	 *            the wavein bytes
 	 * @return true if there is enough space of the buffer to append these bytes
 	 */
-	public boolean appendBuffer(byte[] data) {
-		return appendBuffer(data, 0, data.length);
+	public boolean appendBuffer(byte[] data, int bitsPerSample,
+			boolean isLittleEndian) {
+		return appendBuffer(data, 0, data.length, bitsPerSample, isLittleEndian);
 	}
 
 	/**
@@ -78,13 +79,37 @@ public class DynamicAverageAnalyzer implements WaveinAnalyzer {
 	 *            how much to copy
 	 * @return true if there is enough space of the buffer to append these bytes
 	 */
-	public boolean appendBuffer(byte[] data, int offset, int len) {
-		if (start + remainLen + len > bufferSize) {
+	public boolean appendBuffer(byte[] data, int offset, int len,
+			int bitsPerSample, boolean isLittleEndian) {
+		if (bitsPerSample == 8) {
+			if (start + remainLen + len > bufferSize) {
+				return false;
+			}
+			for (int i = 0; i < len; i++) {
+				buffer[start + remainLen + i] = data[offset + i] & 0xff;
+			}
+			remainLen += len;
+			return true;
+		} else if (bitsPerSample == 16) {
+			if (start + remainLen + len / 2 > bufferSize) {
+				return false;
+			}
+			if (isLittleEndian) {
+				for (int i = 0; i < len / 2; i++) {
+					buffer[start + remainLen + i] = Util.readShortLittleEndian(
+							data, i * 2) >> 8;
+				}
+			} else {
+				for (int i = 0; i < len / 2; i++) {
+					buffer[start + remainLen + i] = Util.readShortBigEndian(
+							data, i * 2) >> 8;
+				}
+			}
+			remainLen += len / 2;
+			return true;
+		} else {
 			return false;
 		}
-		System.arraycopy(data, offset, buffer, start + remainLen, len);
-		remainLen += len;
-		return true;
 	}
 
 	/**
