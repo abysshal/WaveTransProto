@@ -10,7 +10,7 @@ public class AnalyzerTest2 {
 	// public static final String path = "./test/data_pc_in.wav";
 	// public static final String path = "./test/waveout.wav";
 
-	public static final String path = "./test/AC3_S5570_r/wavein_AC3_S5570_r_4.wav";
+	public static final String path = "./test/AC3_S5570_r/wavein_AC3_S5570_r_33.wav";
 	public static final int bufferSize = 6000;
 
 	public static void main(String[] args) throws Exception {
